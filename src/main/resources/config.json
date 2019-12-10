@@ -1,0 +1,58 @@
+{
+	"databasePairs": [
+		{
+			"name": "旅游V3",
+			"sourceDatabase": {
+				"host": "192.168.1.1",
+				"port": "15432",
+				"username": "postgres",
+				"password": "123456",
+				"database": "db1"
+			},
+			"targetDatabase": {
+				"host": "192.168.1.2",
+				"port": "5432",
+				"username": "postgres",
+				"password": "123456",
+				"database": "db2"
+			},
+			"tables": [
+				{
+					"schemaName": "public",
+					"tableName": "categories",
+					"countTableName": "categories_count",
+					"limit": 1000,
+					"columns": [
+						{ "name": "id", "type": "int4" },
+						{ "name": "name", "type": "varchar" },
+						{ "name": "star_suffix", "type": "varchar" },
+						{ "name": "sort", "type": "int4" },
+						{ "name": "enabled", "type": "bool" },
+						{ "name": "add_time", "type": "timestamp" },
+						{ "name": "update_time", "type": "timestamp" }
+					]
+				},
+				{
+					"schemaName": "public",
+					"tableName": "provinces",
+					"countTableName": "provinces_count",
+					"limit": 1000,
+					"columns": [
+						{ "name": "id", "type": "int4" },
+						{ "name": "name", "type": "varchar" },
+						{ "name": "spell", "type": "varchar" },
+						{ "name": "lat", "type": "numeric" },
+						{ "name": "lng", "type": "numeric" },
+						{ "name": "sort", "type": "int4" },
+						{ "name": "municipality", "type": "bool" },
+						{ "name": "geometry", "type": "text" },
+						{ "name": "add_time", "type": "timestamp" },
+						{ "name": "update_time", "type": "timestamp" },
+						{ "name": "overlap", "type": "bool" },
+						{ "name": "comment_export", "type": "bool" }
+					]
+				}
+			]
+		}
+	]
+}

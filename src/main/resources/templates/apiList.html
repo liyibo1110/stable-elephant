@@ -1,0 +1,42 @@
+<html>
+<head>
+	<title>API接口测试</title>
+	<script src="/js/jquery-3.0.0.min.js"></script>
+	
+	<script>
+		
+		function displaySuccess(data){
+			alert('success');
+		}
+	
+		$(document).ready(function(){
+			
+			$('#button101_1').click(function(){
+				$.ajax({
+					url : "/transfer",
+					type : "get",
+					data : {},
+					success: displaySuccess
+				});
+			});
+	
+		});	
+	</script>
+</head>
+
+<body>
+<h2>API接口测试</h2>
+
+<div id="div1" style="width: 20%; height: 100%; float: left">
+	
+	<h5>数据接口相关</h5>
+	<div><input type="button" id="button101_1" name="button101_1" value="/transfer"/></div>
+	
+</div>
+
+<div id="div2" style="width: 80%; height: 100%; float: left">
+</div>
+<div style="clear:both"></div>
+
+</body>
+</html>
