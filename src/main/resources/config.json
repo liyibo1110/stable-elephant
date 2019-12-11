@@ -3,25 +3,25 @@
 		{
 			"name": "旅游V3",
 			"sourceDatabase": {
-				"host": "192.168.1.1",
+				"host": "192.168.3.28",
 				"port": "15432",
 				"username": "postgres",
-				"password": "123456",
-				"database": "db1"
+				"password": "dev@yjxd.com_euci",
+				"database": "travel_prd_v3"
 			},
 			"targetDatabase": {
-				"host": "192.168.1.2",
+				"host": "192.168.3.52",
 				"port": "5432",
 				"username": "postgres",
-				"password": "123456",
-				"database": "db2"
+				"password": "dev@yjxd.com_euci",
+				"database": "travel_prd_v3_target"
 			},
 			"tables": [
-				{
+			{
 					"schemaName": "public",
 					"tableName": "categories",
 					"countTableName": "categories_count",
-					"limit": 1000,
+					"limit": 100,
 					"columns": [
 						{ "name": "id", "type": "int4" },
 						{ "name": "name", "type": "varchar" },
@@ -36,7 +36,7 @@
 					"schemaName": "public",
 					"tableName": "provinces",
 					"countTableName": "provinces_count",
-					"limit": 1000,
+					"limit": 100,
 					"columns": [
 						{ "name": "id", "type": "int4" },
 						{ "name": "name", "type": "varchar" },
@@ -50,6 +50,35 @@
 						{ "name": "update_time", "type": "timestamp" },
 						{ "name": "overlap", "type": "bool" },
 						{ "name": "comment_export", "type": "bool" }
+					]
+				},
+				{
+					"schemaName": "public",
+					"tableName": "comments",
+					"countTableName": "comments_count",
+					"limit": 1000,
+					"columns": [
+						{ "name": "id", "type": "int8" },
+						{ "name": "category_ids", "type": "int4[]" },
+						{ "name": "sku_id", "type": "int4" },
+						{ "name": "data_guid", "type": "varchar" },
+						{ "name": "data_replyid", "type": "varchar" },
+						{ "name": "comment_time", "type": "timestamp" },
+						{ "name": "sentiment", "type": "int4" },
+						{ "name": "property_set", "type": "int4" },
+						{ "name": "properties", "type": "int4[]" },
+						{ "name": "comment_text", "type": "varchar" },
+						{ "name": "user_name", "type": "varchar" },
+						{ "name": "reply_status", "type": "int4" },
+						{ "name": "reply_url", "type": "varchar" },
+						{ "name": "image_urls", "type": "jsonb" },
+						{ "name": "enabled", "type": "bool" },
+						{ "name": "add_time", "type": "timestamp" },
+						{ "name": "update_time", "type": "timestamp" },
+						{ "name": "category_ids_refreshed", "type": "bool" },
+						{ "name": "risk", "type": "bool" },
+						{ "name": "comment_score", "type": "varchar" },
+						{ "name": "original_comment_id", "type": "int8" }
 					]
 				}
 			]

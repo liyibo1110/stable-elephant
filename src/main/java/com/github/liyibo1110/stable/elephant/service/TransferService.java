@@ -1,32 +1,28 @@
 package com.github.liyibo1110.stable.elephant.service;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.beans.BeanGenerator;
 import org.springframework.stereotype.Service;
 
 import com.github.liyibo1110.stable.elephant.app.Application;
-import com.github.liyibo1110.stable.elephant.component.DatabaseHolder;
 import com.github.liyibo1110.stable.elephant.dao.DynamicDao;
 import com.github.liyibo1110.stable.elephant.entity.Column;
 import com.github.liyibo1110.stable.elephant.entity.ColumnsInfo;
 import com.github.liyibo1110.stable.elephant.entity.Config;
 import com.github.liyibo1110.stable.elephant.entity.DatabasePair;
 import com.github.liyibo1110.stable.elephant.entity.Table;
-import com.github.liyibo1110.stable.elephant.util.Utils;
 
 @Service
 public class TransferService {
 
 	private static Logger logger = LoggerFactory.getLogger(TransferService.class);
 
-	@Autowired
-	private DatabaseHolder databaseHolder;
+	/*@Autowired
+	private DatabaseHolder databaseHolder;*/
 	
 	@Autowired
 	private DynamicDao dynamicDao;
@@ -59,25 +55,60 @@ public class TransferService {
 	private void transfer(int pairsIndex, Table table) {
 		logger.info("开始处理" + table.getTableName());
 		ColumnsInfo columnsInfo = createColumnsInfo(table.getColumns());
-		Object dynamicObject = generateObjectByField(columnsInfo);
-		Long maxId = dynamicDao.getCountTableMaxId(pairsIndex, table.getSchemaName(), table.getTableName());
-		logger.info("maxId：" + maxId);
+		// Object dynamicObject = generateObjectByField(columnsInfo);
 		
-		// logger.info(columnsInfo.toString());
-		// logger.info(dynamicObject.toString());
-		
-		
-		/*String v = null;
-		try {
-			v = BeanUtils.getProperty(dynamicObject, "id");
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
+		while(true) {
+			// 获取单表的maxId
+			Long maxId = dynamicDao.getCountTableMaxId(pairsIndex, table.getSchemaName(), table.getCountTableName());
+			logger.info("maxId：" + maxId);
+			List<Map<String, Object>> resultList = dynamicDao.getList(pairsIndex, table.getSchemaName(), table.getTableName(), columnsInfo, maxId, table.getLimit());
+			logger.info("查询完成，共" + resultList.size() + "条数据");
+			// logger.info(resultList.toString());
+			int size = resultList.size();
+			if(size == 0) {
+				logger.info(table.getTableName() + "表已没有数据要同步，同步完成");
+				break;
+			}
+			
+			// logger.info(resultList.toString());
+			/*for(Map<String, Object> map : resultList) {
+				for(String columnName : map.keySet()) {
+					logger.info(columnName);
+				}
+			}*/
+			dynamicDao.addList(pairsIndex, table.getSchemaName(), table.getTableName(), columnsInfo, resultList);
+			logger.info("批量insert已成功");
+			
+			// 回写maxId
+			maxId = Long.parseLong(resultList.get(resultList.size() - 1).get("id").toString());
+			logger.info("准备回写最新maxId：" + maxId);
+			dynamicDao.updateCountTableMaxId(pairsIndex, table.getSchemaName(), table.getCountTableName(), maxId);
+			logger.info("回写maxId成功");
+			// 判断是否还要循环（size位于0和limit之间，绝对不等于0，最大是limit）
+			if(size < table.getLimit()) {
+				logger.info(table.getTableName() + "表已同步到最后一批数据，同步完成");
+				break;
+			}
+			
+			
+			// logger.info(columnsInfo.toString());
+			// logger.info(dynamicObject.toString());
+			
+			
+			/*String v = null;
+			try {
+				v = BeanUtils.getProperty(dynamicObject, "id");
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			} catch (NoSuchMethodException e) {
+				e.printStackTrace();
+			}
+			logger.info("id：" + v);*/
 		}
-		logger.info("id：" + v);*/
+		
+		
 	}
 
 	private ColumnsInfo createColumnsInfo(List<Column> columns) {
@@ -85,11 +116,12 @@ public class TransferService {
 		for(Column c : columns) {
 			info.addColumnName(c.getName());
 			info.addColumnType(c.getType());
+			info.putColumnNameAndColumnType(c.getName(), c.getType());
 		}
 		return info;
 	}
 	
-	private Object generateObjectByField(ColumnsInfo info) {
+	/*private Object generateObjectByField(ColumnsInfo info) {
 		BeanGenerator generator = new BeanGenerator();
 		// 增加动态属性字段
 		for(int i = 0; i < info.getColumnNames().size(); i++) {
@@ -104,13 +136,13 @@ public class TransferService {
 		
 		Object obj = generator.create();
 		// 给字段赋值
-		/*try {
+		try {
 			BeanUtils.setProperty(obj, "id", 123);
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
-		}*/
+		}
 		return obj;
-	}
+	}*/
 }
