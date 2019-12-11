@@ -3,18 +3,18 @@
 		{
 			"name": "旅游V3",
 			"sourceDatabase": {
-				"host": "192.168.3.28",
+				"host": "192.168.1.111",
 				"port": "15432",
 				"username": "postgres",
-				"password": "dev@yjxd.com_euci",
-				"database": "travel_prd_v3"
+				"password": "123456",
+				"database": "db1"
 			},
 			"targetDatabase": {
-				"host": "192.168.3.52",
+				"host": "192.168.2.222",
 				"port": "5432",
 				"username": "postgres",
-				"password": "dev@yjxd.com_euci",
-				"database": "travel_prd_v3_target"
+				"password": "123456",
+				"database": "db2_target"
 			},
 			"tables": [
 			{
