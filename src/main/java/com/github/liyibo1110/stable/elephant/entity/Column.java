@@ -7,6 +7,7 @@ public class Column {
 
 	private String name;
 	private String type;
+	private String handler;
 	
 	public String getName() {
 		return name;
@@ -20,7 +21,12 @@ public class Column {
 	public void setType(String type) {
 		this.type = type;
 	}
-	
+	public String getHandler() {
+		return handler;
+	}
+	public void setHandler(String handler) {
+		this.handler = handler;
+	}
 	@Override
 	public String toString() {
 		return ReflectionToStringBuilder.toString(this, MultilineRecursiveToStringStyle.JSON_STYLE);

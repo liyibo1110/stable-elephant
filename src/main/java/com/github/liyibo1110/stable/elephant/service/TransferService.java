@@ -41,14 +41,18 @@ public class TransferService {
 		logger.info(config.toString());
 		for(int i = 0; i < config.getDatabasePairs().size(); i++) {
 			DatabasePair dbPair = config.getDatabasePairs().get(i);
-			transfer(i, dbPair);
+			if(dbPair.getEnabled()) {
+				transfer(i, dbPair);
+			}
 		}
 	}
 	
 	private void transfer(int pairsIndex, DatabasePair dbPair) {
 		logger.info("开始处理" + dbPair.getName());
 		for(Table table : dbPair.getTables()) {
-			transfer(pairsIndex, table);
+			if(table.getEnabled()) {
+				transfer(pairsIndex, table);
+			}
 		}
 	}
 	
@@ -116,7 +120,9 @@ public class TransferService {
 		for(Column c : columns) {
 			info.addColumnName(c.getName());
 			info.addColumnType(c.getType());
+			info.addColumnHandlers(c.getHandler());
 			info.putColumnNameAndColumnType(c.getName(), c.getType());
+			info.putColumnNameAndColumnHandler(c.getName(), c.getHandler());
 		}
 		return info;
 	}

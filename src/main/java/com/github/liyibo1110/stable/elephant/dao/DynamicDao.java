@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,9 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.stereotype.Repository;
 
+import com.github.liyibo1110.stable.elephant.app.Application;
 import com.github.liyibo1110.stable.elephant.entity.ColumnsInfo;
+import com.github.liyibo1110.stable.elephant.handler.Handler;
 import com.github.liyibo1110.stable.elephant.util.Utils;
 
 @Repository
@@ -93,6 +96,7 @@ public class DynamicDao {
 				int count = 1;
 				for(String columnName : map.keySet()) {
 					String columnType = columnsInfo.getTypeNameByColumnName(columnName);
+					String columnHandler = columnsInfo.getHandlerNameByColumnName(columnName);
 					// logger.info("columnType：" + columnType);
 					switch(columnType) {
 						case "int4": {
@@ -139,7 +143,15 @@ public class DynamicDao {
 							if (map.get(columnName) == null) {
 								ps.setNull(count, java.sql.Types.VARCHAR);
 							} else {
-								ps.setString(count, map.get(columnName).toString());
+								String value = map.get(columnName).toString();
+								// logger.info("原值：" + value);
+								if(StringUtils.isNotBlank(columnHandler)) {
+									// logger.info("columnHandler: " + columnHandler);
+									Handler<String> h = (Handler<String>)Application.handlersMap.get(columnHandler);
+									value = h.handler(value);
+								}
+								// logger.info("新值：" + value);
+								ps.setString(count, value);
 							}
 							break;
 						}

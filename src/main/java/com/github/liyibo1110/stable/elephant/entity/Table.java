@@ -14,6 +14,7 @@ public class Table {
 	 * 每轮最多获取的数据量（即分页同步）
 	 */
 	private Integer limit;
+	private Boolean enabled;
 	private List<Column> columns;
 
 	public String getCountTableName() {
@@ -46,6 +47,14 @@ public class Table {
 
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
+	}
+	
+	public Boolean getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
 	}
 
 	public List<Column> getColumns() {

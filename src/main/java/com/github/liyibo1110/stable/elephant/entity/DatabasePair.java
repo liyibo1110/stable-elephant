@@ -8,6 +8,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 public class DatabasePair {
 
 	private String name;
+	private Boolean enabled;
 	private SourceDatabase sourceDatabase;
 	private TargetDatabase targetDatabase;
 	private List<Table> tables;
@@ -17,6 +18,12 @@ public class DatabasePair {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	public Boolean getEnabled() {
+		return enabled;
+	}
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
 	}
 	public SourceDatabase getSourceDatabase() {
 		return sourceDatabase;
