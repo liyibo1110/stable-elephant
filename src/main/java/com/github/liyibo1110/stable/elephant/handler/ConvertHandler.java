@@ -6,7 +6,7 @@ package com.github.liyibo1110.stable.elephant.handler;
  *
  * @param <T>
  */
-public interface Handler<T> {
+public interface ConvertHandler<T> {
 
 	public T handler(T value);
 }

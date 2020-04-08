@@ -1,9 +1,9 @@
 package com.github.liyibo1110.stable.elephant.entity;
 
-public class ColumnHandler {
+public class JoinTable {
 
 	private String name;
-	private String handler;
+	private String joinColumn;
 	
 	public String getName() {
 		return name;
@@ -11,11 +11,10 @@ public class ColumnHandler {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public String getHandler() {
-		return handler;
+	public String getJoinColumn() {
+		return joinColumn;
 	}
-	public void setHandler(String handler) {
-		this.handler = handler;
+	public void setJoinColumn(String joinColumn) {
+		this.joinColumn = joinColumn;
 	}
-	
 }

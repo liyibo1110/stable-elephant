@@ -3,6 +3,7 @@ package com.github.liyibo1110.stable.elephant.service;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import com.github.liyibo1110.stable.elephant.entity.ColumnsInfo;
 import com.github.liyibo1110.stable.elephant.entity.Config;
 import com.github.liyibo1110.stable.elephant.entity.DatabasePair;
 import com.github.liyibo1110.stable.elephant.entity.Table;
+import com.github.liyibo1110.stable.elephant.handler.AfterHandler;
 
 @Service
 public class TransferService {
@@ -38,7 +40,7 @@ public class TransferService {
 		}*/
 		
 		Config config = Application.config;
-		logger.info(config.toString());
+		// logger.info(config.toString());
 		for(int i = 0; i < config.getDatabasePairs().size(); i++) {
 			DatabasePair dbPair = config.getDatabasePairs().get(i);
 			if(dbPair.getEnabled()) {
@@ -65,8 +67,12 @@ public class TransferService {
 			// 获取单表的maxId
 			Long maxId = dynamicDao.getCountTableMaxId(pairsIndex, table.getSchemaName(), table.getCountTableName());
 			logger.info("maxId：" + maxId);
-			List<Map<String, Object>> resultList = dynamicDao.getList(pairsIndex, table.getSchemaName(), table.getTableName(), columnsInfo, maxId, table.getLimit());
+			// List<Map<String, Object>> resultList = dynamicDao.getList(pairsIndex, table.getSchemaName(), table.getTableName(), columnsInfo, maxId, table.getLimit());
+			List<Map<String, Object>> resultList = dynamicDao.getList(pairsIndex, table, columnsInfo, maxId);
 			logger.info("查询完成，共" + resultList.size() + "条数据");
+			
+			// break;
+			
 			// logger.info(resultList.toString());
 			int size = resultList.size();
 			if(size == 0) {
@@ -74,15 +80,17 @@ public class TransferService {
 				break;
 			}
 			
-			// logger.info(resultList.toString());
-			/*for(Map<String, Object> map : resultList) {
-				for(String columnName : map.keySet()) {
-					logger.info(columnName);
-				}
-			}*/
-			dynamicDao.addList(pairsIndex, table.getSchemaName(), table.getTableName(), columnsInfo, resultList);
-			logger.info("批量insert已成功");
-			
+			// 重点，检查是否注册了afterQueryHandler
+			String afterQueryHandlerName = table.getAfterQueryHandler();
+			if(StringUtils.isBlank(afterQueryHandlerName)) {
+				dynamicDao.addList(pairsIndex, table.getSchemaName(), table.getTableName(), columnsInfo, resultList);
+				logger.info("批量insert已成功");
+			}else {
+				// 如果注册了，则不执行addList写数据库操作，改为执行自定义的handler方法
+				AfterHandler h = (AfterHandler)Application.afterHandlersMap.get(afterQueryHandlerName);
+				boolean result = h.handler(resultList, columnsInfo);
+				logger.info("afterHandler处理结果为：" + result);
+			}
 			// 回写maxId
 			maxId = Long.parseLong(resultList.get(resultList.size() - 1).get("id").toString());
 			logger.info("准备回写最新maxId：" + maxId);
@@ -120,9 +128,18 @@ public class TransferService {
 		for(Column c : columns) {
 			info.addColumnName(c.getName());
 			info.addColumnType(c.getType());
-			info.addColumnHandlers(c.getHandler());
+			info.addColumnConvertHandlers(c.getConvertHandler());
+			info.addColumnJoinTable(c.getJoinTable());
+			info.addColumnSelfColumn(c.getSelfColumn());
+			info.addColumnReferColumn(c.getReferColumn());
+			
 			info.putColumnNameAndColumnType(c.getName(), c.getType());
-			info.putColumnNameAndColumnHandler(c.getName(), c.getHandler());
+			info.putColumnNameAndColumnConvertHandler(c.getName(), c.getConvertHandler());
+			if(StringUtils.isBlank(c.getJoinTable())) {
+				info.putColumnNameAndNeedInsertHandler(c.getName(), true);
+			}else {
+				info.putColumnNameAndNeedInsertHandler(c.getName(), false);
+			}
 		}
 		return info;
 	}

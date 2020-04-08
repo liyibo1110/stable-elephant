@@ -7,7 +7,10 @@ public class Column {
 
 	private String name;
 	private String type;
-	private String handler;
+	private String convertHandler;
+	private String joinTable;
+	private String selfColumn;
+	private String referColumn;
 	
 	public String getName() {
 		return name;
@@ -21,11 +24,29 @@ public class Column {
 	public void setType(String type) {
 		this.type = type;
 	}
-	public String getHandler() {
-		return handler;
+	public String getConvertHandler() {
+		return convertHandler;
 	}
-	public void setHandler(String handler) {
-		this.handler = handler;
+	public void setConvertHandler(String convertHandler) {
+		this.convertHandler = convertHandler;
+	}
+	public String getJoinTable() {
+		return joinTable;
+	}
+	public void setJoinTable(String joinTable) {
+		this.joinTable = joinTable;
+	}
+	public String getSelfColumn() {
+		return selfColumn;
+	}
+	public void setSelfColumn(String selfColumn) {
+		this.selfColumn = selfColumn;
+	}
+	public String getReferColumn() {
+		return referColumn;
+	}
+	public void setReferColumn(String referColumn) {
+		this.referColumn = referColumn;
 	}
 	@Override
 	public String toString() {

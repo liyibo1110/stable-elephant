@@ -23,9 +23,11 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.liyibo1110.stable.elephant.entity.ColumnHandler;
+import com.github.liyibo1110.stable.elephant.entity.AfterQueryHandler;
+import com.github.liyibo1110.stable.elephant.entity.ColumnConvertHandler;
 import com.github.liyibo1110.stable.elephant.entity.Config;
-import com.github.liyibo1110.stable.elephant.handler.Handler;
+import com.github.liyibo1110.stable.elephant.handler.AfterHandler;
+import com.github.liyibo1110.stable.elephant.handler.ConvertHandler;
 
 @SpringBootApplication
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
@@ -38,9 +40,11 @@ public class Application {
 	
 	public static Config config;
 	/**
-	 * 存储列columnHandler的name和handler对象
+	 * 存储列columnConvertHandler的name和handler对象
 	 */
-	public static Map<String, Handler<?>> handlersMap = new HashMap<>();
+	public static Map<String, ConvertHandler<?>> convertHandlersMap = new HashMap<>();
+	
+	public static Map<String, AfterHandler> afterHandlersMap = new HashMap<>();
 	
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
@@ -53,7 +57,8 @@ public class Application {
 			String str = IOUtils.toString(new InputStreamReader(classPathResource.getInputStream(),"UTF-8"));
 			// System.out.println(str);
 			config = JSONObject.parseObject(str, Config.class);
-			parseHandlersMap(config);
+			parseConvertHandlersMap(config);
+			parseAfterHandlersMap(config);
 			// System.out.println(config);
 			// logger.info("app初始化完成");
 			// logger.info(handlersMap.toString());
@@ -65,15 +70,30 @@ public class Application {
 		}
 	}
 	
-	private void parseHandlersMap(Config config) {
-		List<ColumnHandler> handlers = config.getColumnHandlers();
-		for(ColumnHandler handler : handlers) {
+	private void parseConvertHandlersMap(Config config) {
+		List<ColumnConvertHandler> handlers = config.getColumnConvertHandlers();
+		for(ColumnConvertHandler handler : handlers) {
 			// 实例化handler里面的类
 			Class<?> clazz = null;
 			try {
 				 clazz = Class.forName(handler.getHandler());
-				 Handler<?> h = (Handler<?>)ConstructorUtils.invokeConstructor(clazz);
-				 handlersMap.put(handler.getName(), h);
+				 ConvertHandler<?> h = (ConvertHandler<?>)ConstructorUtils.invokeConstructor(clazz);
+				 convertHandlersMap.put(handler.getName(), h);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private void parseAfterHandlersMap(Config config) {
+		List<AfterQueryHandler> handlers = config.getAfterQueryHandlers();
+		for(AfterQueryHandler handler : handlers) {
+			// 实例化handler里面的类
+			Class<?> clazz = null;
+			try {
+				 clazz = Class.forName(handler.getHandler());
+				 AfterHandler h = (AfterHandler)ConstructorUtils.invokeConstructor(clazz);
+				 afterHandlersMap.put(handler.getName(), h);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

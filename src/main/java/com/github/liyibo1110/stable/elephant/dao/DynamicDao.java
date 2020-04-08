@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -16,7 +17,9 @@ import org.springframework.stereotype.Repository;
 
 import com.github.liyibo1110.stable.elephant.app.Application;
 import com.github.liyibo1110.stable.elephant.entity.ColumnsInfo;
-import com.github.liyibo1110.stable.elephant.handler.Handler;
+import com.github.liyibo1110.stable.elephant.entity.JoinTable;
+import com.github.liyibo1110.stable.elephant.entity.Table;
+import com.github.liyibo1110.stable.elephant.handler.ConvertHandler;
 import com.github.liyibo1110.stable.elephant.util.Utils;
 
 @Repository
@@ -48,22 +51,85 @@ public class DynamicDao {
 		return getJdbcOperations(index, true).update(sql, maxId);
 	}
 	
-	public List<Map<String, Object>> getList(int index, String schemaName, 
-					String tableName, ColumnsInfo columnsInfo, 
-					long maxId, int limit) {
+	public List<Map<String, Object>> getList(int index, Table table, 
+											ColumnsInfo columnsInfo, long maxId) {
 		
-		StringBuilder sb = new StringBuilder();
+		// 生成表别名
+		String tableAlias = createTableAlias(table.getTableName());
 		// 生成列字符串
-		for(String columnName : columnsInfo.getColumnNames()) {
-			sb.append(columnName);
-			sb.append(",");
+		String columnSQL = createColumnSQL(tableAlias, columnsInfo);
+		// 生成from字符串
+		String fromSQL = createFromSQL(table, columnsInfo);
+		
+		// String sql = "SELECT " + columnSQL + " FROM " + table.getSchemaName() + "." + table.getTableName() + " AS " + tableAlias + " WHERE " + tableAlias +".id>" + maxId + " ORDER BY " + tableAlias + ".id ASC LIMIT " + table.getLimit(); 
+		String sql = "SELECT " + columnSQL + " FROM " + fromSQL + " WHERE " + tableAlias +".id>" + maxId + " ORDER BY " + tableAlias + ".id ASC LIMIT " + table.getLimit(); 
+		// logger.info("sql：" + sql);
+		return getJdbcOperations(index, true).queryForList(sql);
+	}
+	
+	/**
+	 * 生成查询列的SQL片段
+	 */
+	private String createColumnSQL(String tableAlias, ColumnsInfo columnsInfo) {
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < columnsInfo.getColumnNames().size(); i++) {
+			String columnName = columnsInfo.getColumnNames().get(i);
+			String joinTable = columnsInfo.getColumnJoinTable().get(i);
+			String referColumn = columnsInfo.getColumnReferColumn().get(i);
+			// 如果不是join列，就是自己表的列
+			if(StringUtils.isBlank(joinTable)) {
+				sb.append(tableAlias + "." + columnName + " AS " + columnName);
+				sb.append(",");
+			}else {
+				// 说明是关联表的列
+				String joinTableAlias = createTableAlias(joinTable);
+				sb.append(joinTableAlias + "." + referColumn + " AS " + columnName);
+				sb.append(",");
+			}
 		}
+		
+		/*for(String columnName : columnsInfo.getColumnNames()) {
+			
+			sb.append(tableAlias + "." + columnName + " AS " + columnName);
+			sb.append(",");
+		}*/
 		if(sb.length() != 0) {
 			sb.deleteCharAt(sb.length() - 1);
 		}
-		String sql = "SELECT " + sb.toString() + " FROM " + schemaName + "." + tableName + " WHERE id>" + maxId + " ORDER BY id ASC LIMIT " + limit; 
-		// logger.info("sql：" + sql);
-		return getJdbcOperations(index, true).queryForList(sql);
+		return sb.toString();
+	}
+	
+	/**
+	 * 生成from的SQL片段
+	 */
+	private String createFromSQL(Table table, ColumnsInfo columnsInfo) {
+		StringBuilder sb = new StringBuilder();
+		String tableAlias = createTableAlias(table.getTableName());
+		// 先加自己
+		sb.append(table.getSchemaName() + "." + table.getTableName() + " AS " + tableAlias);
+		// 寻找是否有join
+		for(JoinTable joinTable : table.getJoinTables()) {
+			String joinTableAlias = createTableAlias(joinTable.getName());
+			sb.append(" ");
+			sb.append("INNER JOIN " + table.getSchemaName() + "." + joinTable.getName() + " AS " + joinTableAlias + " ON ");
+			// 寻找join原始列
+			for(int i = 0; i < columnsInfo.getColumnJoinTable().size(); i++) {
+				String columnJoinTable = columnsInfo.getColumnJoinTable().get(i);
+				if(Objects.equals(columnJoinTable, joinTable.getName())) {
+					// 找到第一个匹配列就够了
+					sb.append(tableAlias + "." + columnsInfo.getColumnSelfColumn().get(i) + "=" + joinTableAlias + "." + joinTable.getJoinColumn());
+					break;
+				}
+			}
+		}
+		return sb.toString();
+	}
+	
+	/**
+	 * 生成表名简称，例如provinces表会返回pr，cities表会返回ci之类的
+	 */
+	private String createTableAlias(String tableName) {
+		return StringUtils.substring(tableName, 0, 2);
 	}
 	
 	public int addList(int index, String schemaName, 
@@ -73,17 +139,27 @@ public class DynamicDao {
 		StringBuilder sb = new StringBuilder();
 		StringBuilder sb2 = new StringBuilder();
 		// 生成列字符串
-		for(String columnName : columnsInfo.getColumnNames()) {
+		for(int i = 0; i < columnsInfo.getColumnNames().size(); i++) {
+			String joinTable = columnsInfo.getColumnJoinTable().get(i);
+			// 如果列为join列，直接跳过不参与insert
+			if(StringUtils.isNotBlank(joinTable)) continue;
+			String columnName = columnsInfo.getColumnNames().get(i);
 			sb.append(columnName);
 			sb.append(",");
+			String columnType = columnsInfo.getColumnTypes().get(i);
+			sb2.append(Utils.getValuePlaceHolderByColumnType(columnType));
 		}
+		/*for(String columnName : columnsInfo.getColumnNames()) {
+			sb.append(columnName);
+			sb.append(",");
+		}*/
 		if(sb.length() != 0) {
 			sb.deleteCharAt(sb.length() - 1);
 		}
 		// 生成值占位符字符串
-		for(String columnType : columnsInfo.getColumnTypes()) {
+		/*for(String columnType : columnsInfo.getColumnTypes()) {
 			sb2.append(Utils.getValuePlaceHolderByColumnType(columnType));
-		}
+		}*/
 		if(sb2.length() != 0) {
 			sb2.deleteCharAt(sb2.length() - 1);
 		}
@@ -95,8 +171,10 @@ public class DynamicDao {
 				Map<String, Object> map = list.get(index);
 				int count = 1;
 				for(String columnName : map.keySet()) {
+					Boolean needInsert = columnsInfo.getNeedInsertByColumnName(columnName);
+					if(!needInsert) continue;
 					String columnType = columnsInfo.getTypeNameByColumnName(columnName);
-					String columnHandler = columnsInfo.getHandlerNameByColumnName(columnName);
+					String columnConvertHandler = columnsInfo.getConvertHandlerNameByColumnName(columnName);
 					// logger.info("columnType：" + columnType);
 					switch(columnType) {
 						case "int4": {
@@ -145,9 +223,9 @@ public class DynamicDao {
 							} else {
 								String value = map.get(columnName).toString();
 								// logger.info("原值：" + value);
-								if(StringUtils.isNotBlank(columnHandler)) {
+								if(StringUtils.isNotBlank(columnConvertHandler)) {
 									// logger.info("columnHandler: " + columnHandler);
-									Handler<String> h = (Handler<String>)Application.handlersMap.get(columnHandler);
+									ConvertHandler<String> h = (ConvertHandler<String>)Application.convertHandlersMap.get(columnConvertHandler);
 									value = h.handler(value);
 								}
 								// logger.info("新值：" + value);

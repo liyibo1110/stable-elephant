@@ -9,37 +9,37 @@ public class Config {
 
 	private String whenHour;
 	private String whenMinute;
-	private List<ColumnHandler> columnHandlers;
+	private List<ColumnConvertHandler> columnConvertHandlers;
+	private List<AfterQueryHandler> afterQueryHandlers;
 	private List<DatabasePair> databasePairs;
 
 	public String getWhenHour() {
 		return whenHour;
 	}
-
 	public void setWhenHour(String whenHour) {
 		this.whenHour = whenHour;
 	}
-	
 	public String getWhenMinute() {
 		return whenMinute;
 	}
-
 	public void setWhenMinute(String whenMinute) {
 		this.whenMinute = whenMinute;
 	}
-
-	public List<ColumnHandler> getColumnHandlers() {
-		return columnHandlers;
+	public List<ColumnConvertHandler> getColumnConvertHandlers() {
+		return columnConvertHandlers;
 	}
-
-	public void setColumnHandlers(List<ColumnHandler> columnHandlers) {
-		this.columnHandlers = columnHandlers;
+	public void setColumnConvertHandlers(List<ColumnConvertHandler> columnConvertHandlers) {
+		this.columnConvertHandlers = columnConvertHandlers;
 	}
-
+	public List<AfterQueryHandler> getAfterQueryHandlers() {
+		return afterQueryHandlers;
+	}
+	public void setAfterQueryHandlers(List<AfterQueryHandler> afterQueryHandlers) {
+		this.afterQueryHandlers = afterQueryHandlers;
+	}
 	public List<DatabasePair> getDatabasePairs() {
 		return databasePairs;
 	}
-
 	public void setDatabasePairs(List<DatabasePair> databasePairs) {
 		this.databasePairs = databasePairs;
 	}

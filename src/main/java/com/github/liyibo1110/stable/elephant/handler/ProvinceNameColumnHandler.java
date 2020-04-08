@@ -3,7 +3,7 @@ package com.github.liyibo1110.stable.elephant.handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ProvinceNameColumnHandler implements Handler<String> {
+public class ProvinceNameColumnHandler implements ConvertHandler<String> {
 
 	private static Logger logger = LoggerFactory.getLogger(ProvinceNameColumnHandler.class);
 	
