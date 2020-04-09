@@ -4,6 +4,10 @@
 
 ## 版本更新
 ```
+2020-04-08 v0.3.0
+1.增加了表连接INNER JOIN功能，在获取原始数据时可以通过配置来实现跨表查询。（通过表连接而来的它表字段，是不会被写入目标数据库的，一般用来配合自定义处理行为这个功能使用）
+2.增加获取原始数据后自定义处理行为（例如可以将数据保存到本地，或者通过http推送到其他系统接口），同时会取代原来默认的写入目标数据库表的行为。
+
 2019-12-24 v0.2.0
 1. 增加了对数据值进行迁移转换的Handler机制，类似Mybatis，可在config文件中配置handler类，然后配置到columns中的特定列，代码中新增实现了Handler接口的handler方法的类进行注册即可。
 2. 增加了简单定期执行配置（whenHour、whenMinute），到时会自动执行transfer。
@@ -18,7 +22,7 @@
   {
   	"whenHour": "2",
 	"whenMinute": "30",
-	"columnHandlers": [
+	"columnConvertHandlers": [
 		{
 			"name": "provinceNameColumnHandler",
 			"handler": "com.github.liyibo1110.stable.elephant.handler.ProvinceNameColumnHandler"
@@ -26,6 +30,12 @@
 		{
 			"name": "cityNameColumnHandler",
 			"handler": "com.github.liyibo1110.stable.elephant.handler.CityNameColumnHandler"
+		}
+	],
+	"afterQueryHandlers": [
+		{
+			"name": "CityAfterQueryHandler",
+			"handler": "com.github.liyibo1110.stable.elephant.handler.CityAfterQueryHandler"
 		}
 	],
 	"databasePairs": [
@@ -64,6 +74,13 @@
 				{
 					"schemaName": "public",
 					"tableName": "table2",
+					"afterQueryHandler": "CityAfterQueryHandler",
+					"joinTables": [
+						{
+							"name": "provinces",
+							"joinColumn": "id"
+						}
+					],
 					"countTableName": "table2_count",
 					"limit": 100,
 					"enabled": true,
@@ -74,7 +91,8 @@
 						{ "name": "lat", "type": "numeric" },
 						{ "name": "lng", "type": "numeric" },
 						{ "name": "add_time", "type": "timestamp" },
-						{ "name": "update_time", "type": "timestamp" }
+						{ "name": "update_time", "type": "timestamp" },
+						{ "name": "province_name", "type": "varchar", "joinTable": "provinces", "selfColumn": "province_id", "referColumn": "name"}
 					]
 				},
 				{
