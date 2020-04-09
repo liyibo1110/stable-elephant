@@ -68,7 +68,7 @@
 					"enabled": true,
 					"columns": [
 						{ "name": "id", "type": "int4" },
-						{ "name": "name", "type": "varchar", "handler": "provinceNameColumnHandler" },
+						{ "name": "name", "type": "varchar", "convertHandler": "provinceNameColumnHandler" },
 						{ "name": "enabled", "type": "bool" },
 						{ "name": "add_time", "type": "timestamp" },
 						{ "name": "update_time", "type": "timestamp" }
@@ -90,7 +90,7 @@
 					"extraWhere": "#{alias}.add_time<'2019-01-01'::timestamp",
 					"columns": [
 						{ "name": "id", "type": "int4" },
-						{ "name": "name", "type": "varchar", "handler": "cityNameColumnHandler" },
+						{ "name": "name", "type": "varchar", "convertHandler": "cityNameColumnHandler" },
 						{ "name": "spell", "type": "varchar" },
 						{ "name": "lat", "type": "numeric" },
 						{ "name": "lng", "type": "numeric" },
