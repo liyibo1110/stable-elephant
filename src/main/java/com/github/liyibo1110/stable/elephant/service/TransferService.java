@@ -71,10 +71,10 @@ public class TransferService {
 			List<Map<String, Object>> resultList = dynamicDao.getList(pairsIndex, table, columnsInfo, maxId);
 			logger.info("查询完成，共" + resultList.size() + "条数据");
 			
-			// break;
+			break;
 			
 			// logger.info(resultList.toString());
-			int size = resultList.size();
+			/*int size = resultList.size();
 			if(size == 0) {
 				logger.info(table.getTableName() + "表已没有数据要同步，同步完成");
 				break;
@@ -100,7 +100,7 @@ public class TransferService {
 			if(size < table.getLimit()) {
 				logger.info(table.getTableName() + "表已同步到最后一批数据，同步完成");
 				break;
-			}
+			}*/
 			
 			
 			// logger.info(columnsInfo.toString());

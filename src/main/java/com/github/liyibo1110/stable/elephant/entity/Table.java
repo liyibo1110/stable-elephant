@@ -18,6 +18,7 @@ public class Table {
 	 */
 	private Integer limit;
 	private Boolean enabled;
+	private String extraWhere;
 	private List<Column> columns;
 
 	public String getCountTableName() {
@@ -61,6 +62,12 @@ public class Table {
 	}
 	public void setEnabled(Boolean enabled) {
 		this.enabled = enabled;
+	}
+	public String getExtraWhere() {
+		return extraWhere;
+	}
+	public void setExtraWhere(String extraWhere) {
+		this.extraWhere = extraWhere;
 	}
 	public List<Column> getColumns() {
 		return columns;

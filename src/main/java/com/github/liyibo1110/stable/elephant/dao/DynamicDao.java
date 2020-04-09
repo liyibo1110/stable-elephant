@@ -60,10 +60,15 @@ public class DynamicDao {
 		String columnSQL = createColumnSQL(tableAlias, columnsInfo);
 		// 生成from字符串
 		String fromSQL = createFromSQL(table, columnsInfo);
-		
+		// 生成where字符串
+		String whereSQL = createWhereSQL(table, tableAlias, maxId);
+		// 生成orderBy字符串
+		String orderBySQL = createOrderBySQL(tableAlias);
+		// 生成limit字符串
+		String limitSQL = createLimitSQL(table);
 		// String sql = "SELECT " + columnSQL + " FROM " + table.getSchemaName() + "." + table.getTableName() + " AS " + tableAlias + " WHERE " + tableAlias +".id>" + maxId + " ORDER BY " + tableAlias + ".id ASC LIMIT " + table.getLimit(); 
-		String sql = "SELECT " + columnSQL + " FROM " + fromSQL + " WHERE " + tableAlias +".id>" + maxId + " ORDER BY " + tableAlias + ".id ASC LIMIT " + table.getLimit(); 
-		// logger.info("sql：" + sql);
+		String sql = "SELECT " + columnSQL + fromSQL + whereSQL + orderBySQL + limitSQL; 
+		logger.info("sql：" + sql);
 		return getJdbcOperations(index, true).queryForList(sql);
 	}
 	
@@ -99,19 +104,15 @@ public class DynamicDao {
 		return sb.toString();
 	}
 	
-	/**
-	 * 生成from的SQL片段
-	 */
 	private String createFromSQL(Table table, ColumnsInfo columnsInfo) {
 		StringBuilder sb = new StringBuilder();
 		String tableAlias = createTableAlias(table.getTableName());
 		// 先加自己
-		sb.append(table.getSchemaName() + "." + table.getTableName() + " AS " + tableAlias);
+		sb.append(" FROM " + table.getSchemaName() + "." + table.getTableName() + " AS " + tableAlias);
 		// 寻找是否有join
 		for(JoinTable joinTable : table.getJoinTables()) {
 			String joinTableAlias = createTableAlias(joinTable.getName());
-			sb.append(" ");
-			sb.append("INNER JOIN " + table.getSchemaName() + "." + joinTable.getName() + " AS " + joinTableAlias + " ON ");
+			sb.append(" INNER JOIN " + table.getSchemaName() + "." + joinTable.getName() + " AS " + joinTableAlias + " ON ");
 			// 寻找join原始列
 			for(int i = 0; i < columnsInfo.getColumnJoinTable().size(); i++) {
 				String columnJoinTable = columnsInfo.getColumnJoinTable().get(i);
@@ -125,6 +126,30 @@ public class DynamicDao {
 		return sb.toString();
 	}
 	
+	private String createWhereSQL(Table table, String tableAlias, long maxId) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" WHERE " + tableAlias + ".id>" + maxId);
+		String extraWhere = table.getExtraWhere();
+		if(StringUtils.isNotBlank(extraWhere)) {
+			extraWhere = extraWhere.replaceAll("#\\{alias\\}", tableAlias);
+			sb.append(" AND " + extraWhere);
+			
+		}
+		return sb.toString();
+	}
+	
+	private String createOrderBySQL(String tableAlias) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" ORDER BY " + tableAlias + ".id ASC");
+		return sb.toString();
+	}
+	
+	private String createLimitSQL(Table table) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" LIMIT " + table.getLimit());
+		return sb.toString();
+	}
+
 	/**
 	 * 生成表名简称，例如provinces表会返回pr，cities表会返回ci之类的
 	 */
