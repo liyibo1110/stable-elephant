@@ -24,30 +24,31 @@ public class MySchedulingConfigurer implements SchedulingConfigurer {
 	@Autowired
 	private TransferService transferService;
 	
-	private String cronTemplate = "0 minute hour * * ?";
+	// private String cronTemplate = "0 minute hour * * ?";
 	
 	@Override
 	public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
 		
 		Config config = Application.config;
-		logger.info("whenHour值为：" + config.getWhenHour());
-		logger.info("whenMinute值为：" + config.getWhenMinute());
 		
-		taskRegistrar.addTriggerTask(new Runnable() {
-			@Override
-			public void run() {
-				transferService.transfer();
-			}
-			
-		}, new Trigger() {
-			@Override
-			public Date nextExecutionTime(TriggerContext triggerContext) {
-				return new CronTrigger(cronTemplate.replace("hour", config.getWhenHour())
-												   .replace("minute", config.getWhenMinute()))
-									.nextExecutionTime(triggerContext);
-			}
-		});
-
+		// 生成cron表达式
+		if(config.getCronEnabled() != null && config.getCronEnabled().booleanValue()) {
+			taskRegistrar.addTriggerTask(new Runnable() {
+				@Override
+				public void run() {
+					transferService.transfer();
+				}
+				
+			}, new Trigger() {
+				@Override
+				public Date nextExecutionTime(TriggerContext triggerContext) {
+					/*return new CronTrigger(cronTemplate.replace("hour", config.getWhenHour())
+													   .replace("minute", config.getWhenMinute()))
+										.nextExecutionTime(triggerContext);*/
+					return new CronTrigger(config.getCron())
+				.nextExecutionTime(triggerContext);
+				}
+			});
+		}
 	}
-
 }

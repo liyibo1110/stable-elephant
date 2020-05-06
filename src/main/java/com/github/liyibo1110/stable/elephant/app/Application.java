@@ -18,6 +18,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -42,16 +43,20 @@ public class Application {
 	/**
 	 * 存储列columnConvertHandler的name和handler对象
 	 */
-	public static Map<String, ConvertHandler<?>> convertHandlersMap = new HashMap<>();
+	public static Map<String, ConvertHandler<?, ?>> convertHandlersMap = new HashMap<>();
 	
 	public static Map<String, AfterHandler> afterHandlersMap = new HashMap<>();
 	
 	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
+		logger.info("进入了main");
+		ApplicationContext context = SpringApplication.run(Application.class, args);
+		SpringContextUtil.setApplicationContext(context);
+		logger.info("main完事了");
 	}
 
 	@PostConstruct
 	public void start() {
+		logger.info("进入了start");
 		ClassPathResource classPathResource = new ClassPathResource("config.json");
         try {
 			String str = IOUtils.toString(new InputStreamReader(classPathResource.getInputStream(),"UTF-8"));
@@ -68,6 +73,7 @@ public class Application {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+        logger.info("start完事了");
 	}
 	
 	private void parseConvertHandlersMap(Config config) {
@@ -77,7 +83,7 @@ public class Application {
 			Class<?> clazz = null;
 			try {
 				 clazz = Class.forName(handler.getHandler());
-				 ConvertHandler<?> h = (ConvertHandler<?>)ConstructorUtils.invokeConstructor(clazz);
+				 ConvertHandler<?, ?> h = (ConvertHandler<?, ?>)ConstructorUtils.invokeConstructor(clazz);
 				 convertHandlersMap.put(handler.getName(), h);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -92,11 +98,27 @@ public class Application {
 			Class<?> clazz = null;
 			try {
 				 clazz = Class.forName(handler.getHandler());
+				 logger.info("handler:" + handler.getHandler());
 				 AfterHandler h = (AfterHandler)ConstructorUtils.invokeConstructor(clazz);
 				 afterHandlersMap.put(handler.getName(), h);
+				 logger.info("name:" + handler.getName());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			/*logger.info("进入了parseAfterHandlersMap");
+			// TransferService ts = (TransferService)SpringContextUtil.getBean(TransferService.class);
+			TransferService ts = (TransferService)SpringContextUtil.getBean("transferService");
+			
+			if(ts == null) {
+				logger.info("ts为null");
+			}else {
+				logger.info("ts不为null");
+			}
+			
+			String name = handler.getName();
+			logger.info("name:" + name);
+			AfterHandler h = (AfterHandler)SpringContextUtil.getBean(handler.getName());
+			afterHandlersMap.put(handler.getName(), h);*/
 		}
 	}
 }

@@ -7,23 +7,23 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 public class Config {
 
-	private String whenHour;
-	private String whenMinute;
+	private String cron;
+	private Boolean cronEnabled;
 	private List<ColumnConvertHandler> columnConvertHandlers;
 	private List<AfterQueryHandler> afterQueryHandlers;
 	private List<DatabasePair> databasePairs;
 
-	public String getWhenHour() {
-		return whenHour;
+	public String getCron() {
+		return cron;
 	}
-	public void setWhenHour(String whenHour) {
-		this.whenHour = whenHour;
+	public void setCron(String cron) {
+		this.cron = cron;
 	}
-	public String getWhenMinute() {
-		return whenMinute;
+	public Boolean getCronEnabled() {
+		return cronEnabled;
 	}
-	public void setWhenMinute(String whenMinute) {
-		this.whenMinute = whenMinute;
+	public void setCronEnabled(Boolean cronEnabled) {
+		this.cronEnabled = cronEnabled;
 	}
 	public List<ColumnConvertHandler> getColumnConvertHandlers() {
 		return columnConvertHandlers;

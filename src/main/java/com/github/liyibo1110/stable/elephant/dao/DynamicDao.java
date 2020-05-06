@@ -248,13 +248,13 @@ public class DynamicDao {
 							} else {
 								String value = map.get(columnName).toString();
 								// logger.info("原值：" + value);
+								Integer result = null;
 								if(StringUtils.isNotBlank(columnConvertHandler)) {
-									// logger.info("columnHandler: " + columnHandler);
-									ConvertHandler<String> h = (ConvertHandler<String>)Application.convertHandlersMap.get(columnConvertHandler);
-									value = h.handler(value);
+									ConvertHandler<String, Integer> h = (ConvertHandler<String, Integer>)Application.convertHandlersMap.get(columnConvertHandler);
+									result = h.handler(value);
 								}
 								// logger.info("新值：" + value);
-								ps.setString(count, value);
+								ps.setString(count, result.toString());
 							}
 							break;
 						}
@@ -278,7 +278,14 @@ public class DynamicDao {
 							if (map.get(columnName) == null) {
 								ps.setNull(count, java.sql.Types.TIMESTAMP);
 							} else {
-								ps.setString(count, map.get(columnName).toString());
+								String value = map.get(columnName).toString();
+								// logger.info("原值：" + value);
+								if(StringUtils.isNotBlank(columnConvertHandler)) {
+									// logger.info("columnHandler: " + columnHandler);
+									ConvertHandler<String, String> h = (ConvertHandler<String, String>)Application.convertHandlersMap.get(columnConvertHandler);
+									value = h.handler(value);
+								}
+								ps.setString(count, value);
 							}
 							break;
 						}

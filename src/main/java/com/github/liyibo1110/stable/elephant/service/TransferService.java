@@ -18,7 +18,7 @@ import com.github.liyibo1110.stable.elephant.entity.DatabasePair;
 import com.github.liyibo1110.stable.elephant.entity.Table;
 import com.github.liyibo1110.stable.elephant.handler.AfterHandler;
 
-@Service
+@Service("transferService")
 public class TransferService {
 
 	private static Logger logger = LoggerFactory.getLogger(TransferService.class);
@@ -71,10 +71,10 @@ public class TransferService {
 			List<Map<String, Object>> resultList = dynamicDao.getList(pairsIndex, table, columnsInfo, maxId);
 			logger.info("查询完成，共" + resultList.size() + "条数据");
 			
-			break;
+			// break;
 			
 			// logger.info(resultList.toString());
-			/*int size = resultList.size();
+			int size = resultList.size();
 			if(size == 0) {
 				logger.info(table.getTableName() + "表已没有数据要同步，同步完成");
 				break;
@@ -87,6 +87,7 @@ public class TransferService {
 				logger.info("批量insert已成功");
 			}else {
 				// 如果注册了，则不执行addList写数据库操作，改为执行自定义的handler方法
+				logger.info("key:" + afterQueryHandlerName);
 				AfterHandler h = (AfterHandler)Application.afterHandlersMap.get(afterQueryHandlerName);
 				boolean result = h.handler(resultList, columnsInfo);
 				logger.info("afterHandler处理结果为：" + result);
@@ -100,7 +101,7 @@ public class TransferService {
 			if(size < table.getLimit()) {
 				logger.info(table.getTableName() + "表已同步到最后一批数据，同步完成");
 				break;
-			}*/
+			}
 			
 			
 			// logger.info(columnsInfo.toString());
