@@ -4,6 +4,9 @@
 
 ## 版本更新
 ```
+2020-04-09 v0.3.1
+1.table配置项中增加了extraWhere的配置，用来人工写一些额外的where过滤条件以满足查询原始数据的特殊范围。（注意列前面要增加#{alias}这样的固定标识，辅助最终生成完整的SQL片段，因为这里的值可以任意写复杂，所以无法自动增加表别名）
+
 2020-04-08 v0.3.0
 1.增加了表连接INNER JOIN功能，在获取原始数据时可以通过配置来实现跨表查询。（通过表连接而来的它表字段，是不会被写入目标数据库的，一般用来配合自定义处理行为这个功能使用）
 2.增加获取原始数据后自定义处理行为（例如可以将数据保存到本地，或者通过http推送到其他系统接口），同时会取代原来默认的写入目标数据库表的行为。
@@ -65,7 +68,7 @@
 					"enabled": true,
 					"columns": [
 						{ "name": "id", "type": "int4" },
-						{ "name": "name", "type": "varchar", "handler": "provinceNameColumnHandler" },
+						{ "name": "name", "type": "varchar", "convertHandler": "provinceNameColumnHandler" },
 						{ "name": "enabled", "type": "bool" },
 						{ "name": "add_time", "type": "timestamp" },
 						{ "name": "update_time", "type": "timestamp" }
@@ -84,9 +87,10 @@
 					"countTableName": "table2_count",
 					"limit": 100,
 					"enabled": true,
+					"extraWhere": "#{alias}.add_time<'2019-01-01'::timestamp",
 					"columns": [
 						{ "name": "id", "type": "int4" },
-						{ "name": "name", "type": "varchar", "handler": "cityNameColumnHandler" },
+						{ "name": "name", "type": "varchar", "convertHandler": "cityNameColumnHandler" },
 						{ "name": "spell", "type": "varchar" },
 						{ "name": "lat", "type": "numeric" },
 						{ "name": "lng", "type": "numeric" },
