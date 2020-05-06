@@ -4,6 +4,9 @@
 
 ## 版本更新
 ```
+2020-05-06 v0.3.2
+1.移除了whenHour和whenMinute配置，替换成了cron和cronEnabled配置，cron可以直接配置表达式。
+
 2020-04-09 v0.3.1
 1.table配置项中增加了extraWhere的配置，用来人工写一些额外的where过滤条件以满足查询原始数据的特殊范围。（注意列前面要增加#{alias}这样的固定标识，辅助最终生成完整的SQL片段，因为这里的值可以任意写复杂，所以无法自动增加表别名）
 
@@ -23,8 +26,8 @@
   1.唯一的配置文件名为config.json，需要放入/src/main/resources目录中，格式为：
   ```
   {
-  	"whenHour": "2",
-	"whenMinute": "30",
+  	"cron": "0 0/1 * * * ?",
+	"cronEnabled": false,
 	"columnConvertHandlers": [
 		{
 			"name": "provinceNameColumnHandler",
@@ -119,5 +122,4 @@
 	]
 }
 ```
-  2.回头补上定期任务这块的功能 
   
